@@ -4,12 +4,24 @@ Must be extracted into the Arduino library folder
 */
 #include <PPMReader.h>
 
+// Pins
+const byte interruptPin = 3;
+
+// PPM
+int channels = 8;
+PPMReader ppm(interruptPin, channels);
+
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(9600);
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Print channel values
+  for (int channel = 1; channel <= channels; ++channel) {
+    unsigned long value = ppm.latestValidChannelValue(channel, 0);
+    Serial.print(String(value) + " ");
+  }
+  Serial.println();
 
 }
