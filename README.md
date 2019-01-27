@@ -6,5 +6,7 @@ through an XBee network.
 
 ## Pre-requisites:
 * PPM Library:
-Uses https://github.com/Nikkilae/PPM-reader
-Must be extracted into the Arduino library folder
+Uses https://github.com/Nikkilae/PPM-reader,
+must be extracted into the Arduino library folder
+* XBee Library: https://github.com/Nikkilae/PPM-reader,
+available in the Arduino library manager
