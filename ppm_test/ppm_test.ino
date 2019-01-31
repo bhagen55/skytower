@@ -19,9 +19,8 @@ void setup() {
 void loop() {
   // Print channel values
   for (int channel = 1; channel <= channels; ++channel) {
-    unsigned long value = ppm.latestValidChannelValue(channel, 0);
+    int value = ppm.latestValidChannelValue(channel, 0);
     Serial.print(String(value) + " ");
   }
   Serial.println();
-
 }
