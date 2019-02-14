@@ -6,8 +6,8 @@ const byte ppmPin = 20;
 const byte statusLed = 13;
 
 /*
---- PPM ---
-*/
+ * --- PPM ---
+ */
 // vars
 const int ppmChannels = 8;
 int channelVals[ppmChannels];
@@ -17,8 +17,8 @@ uint8_t payload[ppmChannels * 2];
 PulsePositionInput ppmIn;
 
 /*
---- XBee ---
-*/
+ * --- XBee ---
+ */
 // vars
 XBeeAddress64 addr64 = XBeeAddress64(0x13A200, 0x415B1139);
 ZBTxRequest zbTx = ZBTxRequest(addr64, payload, sizeof(payload));
