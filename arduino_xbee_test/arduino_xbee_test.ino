@@ -39,7 +39,7 @@ void setup() {
 }
 
 void loop() {
-  pin5 = analogRead(5);
+  pin5 = 2;
   payload[0] = pin5 >> 8 & 0xff;
   payload[1] = pin5 & 0xff;
 
