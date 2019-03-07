@@ -30,6 +30,21 @@ void flashLed(int pin, int times, int wait) {
   }
 }
 
+void readChannelPayload(int channels, char buff[], uint16_t channelVals[]) {
+  for (int i = 0; i < channels; i++) {
+    channelVals[i] = buff[(i)*2] | buff[(i)*2+1] << 8;
+    Serial.println(channelVals[i]);
+  }
+}
+
+void printChannelVals(int channels, uint16_t channelVals[]) {
+  for (int i = 0; i < channels; i++) {
+    Serial.print(channelVals[i]);
+    Serial.print(",");
+  }
+  Serial.println();
+}
+
 
 
 void setup() {
@@ -55,11 +70,19 @@ void loop() {
         buffInd++;
       }
       buff[buffInd] = recv;
-      buff[buffInd + 1] = '\0';
+      //buff[buffInd + 1] = '\0';
+      
       received = true;
       Serial.println(buff);
+      readChannelPayload(channels, buff, channelVals);
+      printChannelVals(channels, channelVals);
+      
       buffInd = 0;
       received = false;
+    }
+    else {
+      Serial.print("Not at start: ");
+      Serial.println(recv);
     }
   }
   //Serial.println("No data available");
