@@ -1,5 +1,6 @@
 #include <XBee.h>
 #include <PulsePosition.h>
+#include <elapsedMillis.h>
 
 // Pins
 const byte ppmPin = 20;
@@ -13,11 +14,18 @@ const int ppmChannels = 8;
 uint16_t channelVals[ppmChannels];
 //uint8_t payload[ppmChannels * 2];
 
+#define rxTimeout 3000
+
+// Receiving
+char buff[100];
+char telemRx[100];
+
+
 // ppm reader
 PulsePositionInput ppmIn;
 
 // Serial sender
-char channelBuff[(ppmChannels * 2) + 3]; 
+char channelBuff[(ppmChannels * 2) + 3];
 
 
 /*
@@ -58,9 +66,9 @@ void loadChannelBuff(int channels, uint16_t channelArr[], char buff[]) {
   buff[pIndex] = '[';
 
   pIndex++;
-  
 
-  for (int chan = 0; chan <= channels; chan++) {
+
+  for (int chan = 0; chan < channels; chan++) {
     buff[pIndex] = channelArr[chan] >> 8 & 0xff;
     pIndex++;
     buff[pIndex] = channelArr[chan] & 0xff;
@@ -69,34 +77,77 @@ void loadChannelBuff(int channels, uint16_t channelArr[], char buff[]) {
 
   buff[pIndex] = ']';
 
-  buff[pIndex+1] = '\0';
+  buff[pIndex + 1] = '\0';
 
 }
 
-void setup() {
-  pinMode(statusLed, OUTPUT);
-  
-  // PPM
-  ppmIn.begin(ppmPin);
-
-  // USB Serial
-  Serial.begin(9600);
-
-  // XBee Serial
-  Serial1.begin(9600);
-
-  flashLed(statusLed, 3, 50);
-  Serial.println("GS Starting...");
-}
-
-void loop() {
-  //Serial.println("Sending");
+void sendChannelPayload() {
   getChannelVals(ppmChannels, channelVals);
   loadChannelBuff(ppmChannels, channelVals, channelBuff);
 
+  // Send to XBee
   Serial1.write(channelBuff);
-  Serial.write(channelBuff);
-  Serial.print("hello");
 
-  delay(200);
+  // Send to serial
+  Serial.write(channelBuff);
+  Serial.write('\n');
+}
+
+void readTelemPayload(char buff[], char telemRx[]) {
+  elapsedMillis timeElapsed;
+  while (Serial1.available() == 0 && timeElapsed < rxTimeout) {
+    delay(10); // wait to receive data, or to timeout
+  }
+  int buffInd = 0;
+
+  while (Serial1.available() > 0) { // Skips over if timeout
+    char recv = Serial1.read();
+    if (recv == '[') {
+      while (recv != ']') {
+        buff[buffInd] = recv;
+        recv = Serial1.read();
+        buffInd++;
+      }
+      buff[buffInd] = recv;
+      buff[buffInd + 1] = '\0';
+
+      Serial.println(buff);
+    }
+    else {
+      Serial.print("Not at start: ");
+      Serial.println(recv);
+    }
+  }
+}
+
+void setup() {
+  // USB Serial
+  Serial.begin(9600);
+  Serial.println("GS Starting...");
+
+  Serial.println("Setting output pin");
+  pinMode(statusLed, OUTPUT);
+
+  // PPM
+  Serial.println("Starting PPM");
+  ppmIn.begin(ppmPin);
+
+  // XBee Serial
+  Serial.println("Starting XBee Serial");
+  Serial1.begin(9600);
+
+  flashLed(statusLed, 3, 50);
+
+}
+
+void loop() {
+
+  /* Send Data */
+  sendChannelPayload();
+
+
+  /* Receive Data */
+  readTelemPayload(buff, telemRx);
+
+  delay(100);
 }
