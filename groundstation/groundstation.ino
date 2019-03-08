@@ -95,12 +95,19 @@ void sendChannelPayload() {
 
 void readTelemPayload(char buff[], char telemRx[]) {
   elapsedMillis timeElapsed;
-  while (Serial1.available() == 0 && timeElapsed < rxTimeout) {
-    delay(10); // wait to receive data, or to timeout
+  if (Serial1.available() == 0) { // Wait to receive
+    Serial.println("Waiting to receive from Remote");
+    while (Serial1.available() == 0 && timeElapsed < rxTimeout) {
+      delay(50); // wait to receive data, or to timeout
+    }
+    if (timeElapsed >= rxTimeout) {
+      Serial.println("Timed out receiving from Remote");
+    }
   }
+  
   int buffInd = 0;
 
-  while (Serial1.available() > 0) { // Skips over if timeout
+  while (Serial1.available() > 0) {
     char recv = Serial1.read();
     if (recv == '[') {
       while (recv != ']') {
