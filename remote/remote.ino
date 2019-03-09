@@ -1,4 +1,5 @@
 #include <XBee.h>
+#include <PulsePosition.h>
 
 int statusLed = 13;
 
@@ -10,10 +11,12 @@ int buffInd = 0;
 char recv;
 bool received = false;
 
-/*
-   --- XBee ---
-*/
 
+// Pins
+int ppmOutPin = 20;
+
+// PPM
+PulsePositionOutput ppmOut;
 
 /*
    Flash error led
@@ -33,7 +36,13 @@ void flashLed(int pin, int times, int wait) {
 void readChannelPayload(int channels, char buff[], uint16_t channelVals[]) {
   for (int i = 0; i < channels; i++) {
     channelVals[i] = buff[(i)*2] | buff[(i)*2+1] << 8;
-    Serial.println(channelVals[i]);
+    //Serial.println(channelVals[i]);
+  }
+}
+
+void setChannelValues(int channels, uint16_t channelVals[], PulsePositionOutput ppmOut) {
+  for (int i = 0; i < channels; i++) {
+    ppmOut.write(i, channelVals[i]);
   }
 }
 
@@ -56,6 +65,10 @@ void setup() {
   // start XBee serial
   Serial1.begin(9600);
 
+  // PPM
+  Serial.println("Starting PPM Output");
+  ppmOut.begin(ppmOutPin);
+
   flashLed(statusLed, 3, 50);
   Serial.println("Remote Starting...");
 }
@@ -75,6 +88,7 @@ void loop() {
       received = true;
       Serial.println(buff);
       readChannelPayload(channels, buff, channelVals);
+      setChannelValues(channels, channelVals, ppmOut);
       printChannelVals(channels, channelVals);
       
       buffInd = 0;
