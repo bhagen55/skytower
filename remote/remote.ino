@@ -41,7 +41,7 @@ void readChannelPayload(int channels, char buff[], uint16_t channelVals[]) {
 
 void setChannelValues(int channels, uint16_t channelVals[], PulsePositionOutput ppmOut) {
   for (int i = 0; i < channels; i++) {
-    ppmOut.write(i, channelVals[i]);
+    ppmOut.write(i, 1600);
     channelVals[i] = buff[(i) * 2] | buff[(i) * 2 + 1] << 8;
   }
 }
@@ -83,7 +83,8 @@ void loop() {
     }
   }
   while (Serial1.available() > 0) {
-    delay(100);
+    Serial.println(Serial1.available());
+    delay(20);
     char recv = Serial1.read();
     if (recv == '[') {
       while (recv != ']') {
@@ -94,8 +95,12 @@ void loop() {
       buff[buffInd] = recv;
 
       readChannelPayload(channels, buff, channelVals);
-      setChannelValues(channels, channelVals, ppmOut);
+      //setChannelValues(channels, channelVals, ppmOut);
       printChannelVals(channels, channelVals);
+
+      for (int i = 0; i < channels; i++) {
+        ppmOut.write(i + 1, channelVals[i]);
+      }
 
       buffInd = 0;
     }
@@ -107,5 +112,5 @@ void loop() {
 
   /* Send Data */
   Serial1.write("[test]");
-  delay(40);
+  //delay(40);
 }
