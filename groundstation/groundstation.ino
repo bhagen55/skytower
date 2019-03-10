@@ -99,6 +99,7 @@ void readTelemPayload(char buff[], char telemRx[]) {
     Serial.println("Waiting to receive from Remote");
     while (Serial1.available() == 0 && timeElapsed < rxTimeout) {
       delay(50); // wait to receive data, or to timeout
+      //Serial.println("Waiting to receive from Remote1");
     }
     if (timeElapsed >= rxTimeout) {
       Serial.println("Timed out receiving from Remote");
@@ -108,15 +109,22 @@ void readTelemPayload(char buff[], char telemRx[]) {
   int buffInd = 0;
 
   while (Serial1.available() > 0) {
+    //Serial.println("Received data");
+    delay(10);
     char recv = Serial1.read();
     if (recv == '[') {
+      recv = Serial1.read();
       while (recv != ']') {
-        buff[buffInd] = recv;
-        recv = Serial1.read();
-        buffInd++;
+        if (recv == '[') {
+          Serial.println("Error: Two start chars");
+        }
+        else {
+          buff[buffInd] = recv;
+          recv = Serial1.read();
+          buffInd++;
+        }
       }
-      buff[buffInd] = recv;
-      buff[buffInd + 1] = '\0';
+      buff[buffInd] = '\0';
 
       Serial.println(buff);
     }
@@ -156,5 +164,5 @@ void loop() {
   /* Receive Data */
   readTelemPayload(buff, telemRx);
 
-  delay(100);
+  delay(10);
 }
